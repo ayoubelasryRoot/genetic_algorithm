@@ -1,6 +1,7 @@
 import numpy as np
 from load_data import load_data_form_file
 import sys
+
 np.set_printoptions(linewidth=np.inf)
 
 
@@ -13,6 +14,7 @@ class LegoInformation:
         self.nb_lego = len(initial_lego)
 
 
+# todo : add probability to the way we peek and element
 def greedy_algo(current_lego, lego_information):
     cost_models = np.zeros(lego_information.nb_models)
     for i in range(0, lego_information.nb_models):
@@ -28,24 +30,36 @@ def greedy_algo(current_lego, lego_information):
     return np.argmax(cost_models)
 
 
+def current_lego_cost(updated_legos, lego_price):
+    cost = 0
+    for i in range(0, len(updated_legos)):
+        if updated_legos[i] > 0:
+            cost += updated_legos[i] * lego_price[i]
+    return cost
+
+
 def genetic_algo(lego_information=LegoInformation):
     best_solution_models = None
     best_solution_price = -1 * sys.maxsize
-    POPULATION = lego_information.nb_lego * 10
+    POPULATION = 100
 
     population_models = np.zeros((POPULATION, lego_information.nb_lego))
     population_models_cost = np.zeros(POPULATION)
+
+    # ToDo : remove duplicate code in genetic algorithm
 
     print("random population")
     for i in range(0, POPULATION):
         models_used_by_generation = np.zeros(lego_information.nb_models).astype("int32")
         updated_legos = np.copy(lego_information.initial_lego)
+        good_solution = True
         while not current_legos_done(updated_legos):
-            if almot_done(updated_legos):
+            if almost_done(updated_legos):
                 index_model = greedy_algo(current_lego=updated_legos, lego_information=lego_information)
                 updated_legos -= lego_information.lego_models[index_model]
                 models_used_by_generation[index_model] += 1
             else:
+                # ToDo : increase code speed by removing unnecessary copy
                 test_updated_lego = None
                 while True:
                     random_index = np.random.randint(0, len(lego_information.lego_models) - 1)
@@ -55,18 +69,24 @@ def genetic_algo(lego_information=LegoInformation):
                         break
                 updated_legos = np.copy(test_updated_lego)
 
+        if good_solution:
+            cost_generation = np.dot(updated_legos, lego_information.lego_price)
+            if cost_generation > best_solution_price:
+                best_solution_price = cost_generation
+                # ToDo : increase code speed by removing unnecessary copy
+                best_solution_models = np.copy(models_used_by_generation)
+                print("{} : {}".format(repr(best_solution_models), best_solution_price))
 
-        cost_generation = np.dot(updated_legos, lego_information.lego_price)
-        if cost_generation > best_solution_price:
-            best_solution_price = cost_generation
-            best_solution_models = np.copy(models_used_by_generation)
-            print("{} : {}".format(repr(best_solution_models), best_solution_price))
+            population_models[i] = models_used_by_generation
+            population_models_cost[i] = cost_generation
+        else:
+            population_models_cost[i] = sys.maxsize * -1
 
         population_models[i] = models_used_by_generation
         population_models_cost[i] = cost_generation
 
     print("genes selection")
-    POPULATION = lego_information.nb_lego * 2
+    POPULATION = 50
     for i in range(0, 400000):
         # selection
         parent_a = np.argmax(population_models_cost)
@@ -81,44 +101,48 @@ def genetic_algo(lego_information=LegoInformation):
                 value_to_set = population_models[parent_a][h]
                 if population_models[parent_b][h] < population_models[parent_a][h]:
                     value_to_set = population_models[parent_b][h]
-
                 if value_to_set > 0:
-                    if np.random.random() < 0.99:
-                        models_used_by_generation[h] = value_to_set
-                    else:
-                        models_used_by_generation[h] = value_to_set - 1
+                    models_used_by_generation[h] = value_to_set
 
+            # ToDo : increase code speed by removing unnecessary copy
             updated_legos = np.copy(lego_information.initial_lego)
             for model_index in range(0, lego_information.nb_models):
                 if models_used_by_generation[model_index] > 0:
                     updated_legos -= lego_information.lego_models[model_index] * models_used_by_generation[model_index]
-
+            good_solution = True
+            # ToDo : check if we can quit a solution
             while not current_legos_done(updated_legos):
-                if almot_done(updated_legos):
+                if almost_done(updated_legos):
                     index_model = greedy_algo(current_lego=updated_legos, lego_information=lego_information)
                     updated_legos -= lego_information.lego_models[index_model]
                     models_used_by_generation[index_model] += 1
                 else:
                     test_updated_lego = None
                     while True:
+                        # todo check if we can select all valid models and then choose a random one
                         random_index = np.random.randint(0, len(lego_information.lego_models) - 1)
                         test_updated_lego = np.subtract(updated_legos, lego_information.lego_models[random_index])
                         if change_was_made(updated_legos, test_updated_lego):
                             models_used_by_generation[random_index] += 1
                             break
+                    # ToDo : increase code speed by removing unnecessary copy
                     updated_legos = np.copy(test_updated_lego)
 
-            cost_generation = np.dot(updated_legos, lego_information.lego_price)
-            if cost_generation > best_solution_price:
-                best_solution_price = cost_generation
-                best_solution_models = np.copy(models_used_by_generation)
-                print("{} : {}".format(repr(best_solution_models), best_solution_price))
+            if good_solution:
+                cost_generation = np.dot(updated_legos, lego_information.lego_price)
+                if cost_generation > best_solution_price:
+                    best_solution_price = cost_generation
+                    # ToDo : increase code speed by removing unnecessary copy
+                    best_solution_models = np.copy(models_used_by_generation)
+                    print("{} : {}".format(repr(best_solution_models), best_solution_price))
 
-            population_models[j] = models_used_by_generation
-            population_models_cost[j] = cost_generation
+                population_models[j] = models_used_by_generation
+                population_models_cost[j] = cost_generation
+            else:
+                population_models_cost[j] = sys.maxsize * -1
 
 
-def almot_done(current_lego):
+def almost_done(current_lego):
     nb_negative_lego = 0
     for i in range(0, len(current_lego)):
         if current_lego[i] < 0:
