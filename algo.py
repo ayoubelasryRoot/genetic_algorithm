@@ -28,32 +28,32 @@ def is_valid_model(lego_information=LegoInformation, index_model=0, current_lego
     return False
 
 
-def greedy_algorithm(current_lego, lego_information, solution):
-    '''
-    This algorithm is intended to run in another process
-    '''
-    #print(current_lego)
-    best_cost = sys.maxsize * -1
-    ignore_indexes = []
-    while np.min(current_lego) > 0 or len(ignore_indexes) >= lego_information.nb_models:
-        costs = np.dot(lego_information.lego_models,np.transpose(lego_information.lego_price/current_lego))
-        costs = np.array([costs[i]  if i not in ignore_indexes else float('inf') for i in range(len(costs)) ])
-        min_idx = np.argmin(costs)
-        print(costs)
-        if is_valid_model(lego_information=lego_information, index_model=min_idx, current_lego=current_lego):
-            #print(lego_information.lego_models[min_idx])
-            updated_lego = np.subtract(current_lego, lego_information.lego_models[min_idx])
-            cost = np.dot(current_lego, lego_information.lego_price)
-            if cost > best_cost:
-                current_lego = updated_lego
-                solution[min_idx] += 1
-                best_cost = cost
-                print("new_best")
-            else: 
-                ignore_indexes.append(min_idx) 
-        else: 
-            ignore_indexes.append(min_idx)
-    return solution, current_lego
+def reduce_size_objects(lego_information=LegoInformation):
+    # models used for basic solution
+    models_used = np.zeros(len(models)).astype("int32")
+    initial_sum = np.sum(lego_information.initial_lego)
+    # reduce the maximum
+    index = check_best_solution_without_tracking(lego_information.initial_lego)
+    current_legos = lego_information.initial_lego - models[index]
+    models_used[index] += 1
+    while np.min(current_legos) > 0:
+        index = check_best_solution_without_tracking(current_legos)
+        current_legos = current_legos - models[index]
+        models_used[index] += 1
+    return current_legos, models_used
+
+
+def check_best_solution_without_tracking(objects):
+    best_total_cost_priority = sys.maxsize
+    best_model_index = -1
+
+    for index in range(0, len(models)):
+        test = objects - models[index]
+        value = np.amax(test) - np.amin(test)
+        if value < best_total_cost_priority and change_was_made(objects, test):
+            best_total_cost_priority = value
+            best_model_index = index
+    return best_model_index
 
 
 def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
@@ -67,14 +67,14 @@ def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
 
 
 # todo remove duplicate code
-def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
+def genetic_algorithm(lego_information=LegoInformation):
     # solution_greedy =mp.Array('i', lego_information.nb_models)
     # start_solution=mp.Array('i', lego_information.nb_models)
     # # Start greedy algorithm 
     # greedy_process = mp.Process(target=greedy_algorithm, args=(start_solution, lego_information, solution_greedy))
     # to compare models
 
-    best_solution_models = np.zeros(lego_information.nb_models)
+    best_solution_models = np.zeros(lego_information.nb_models).astype("int32")
     best_solution_price = -1 * sys.maxsize
     nb_species_by_iteration = 75
     # crossover
@@ -83,16 +83,13 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
     previous_parent_a_cost = 0
     mutation_probability = 0
 
-    population_models = np.zeros((nb_species_by_iteration, lego_information.nb_models))
-    population_models_cost = np.zeros(nb_species_by_iteration)
+    population_models = np.zeros((nb_species_by_iteration, lego_information.nb_models)).astype("int32")
+    population_models_cost = np.zeros(nb_species_by_iteration).astype("int32")
+    current_legos, models_used_by_generation = reduce_size_objects(lego_information)
 
-    best_solution_models, current_lego = greedy_algorithm(np.copy(lego_information.initial_lego), lego_information, best_solution_models)
-    best_solution_price = np.dot(current_lego, lego_information.lego_price)
-    print("{} : {}".format(repr(best_solution_models), best_solution_price))
-    print(current_lego)
+    # best_solution_models, current_lego = greedy_algorithm(np.copy(lego_information.initial_lego), lego_information, best_solution_models)
     while True:
         for j in range(0, nb_species_by_iteration):
-            models_used_by_generation = np.zeros(lego_information.nb_models).astype("int32")
             if parent_a != -1:
                 species_selection(lego_information, population_models, parent_a, parent_b, models_used_by_generation, mutation_probability)
 
@@ -107,16 +104,15 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
             if cost_generation > best_solution_price:
                 best_solution_price = cost_generation
                 best_solution_models = np.copy(models_used_by_generation)
-                print(' '.join(map(str, best_solution_models)))
+                print(' '.join(map(str, best_solution_models)), " : {}".format(best_solution_price))
                 # print("{} : {}".format(repr(best_solution_models), best_solution_price))
 
             population_models[j] = models_used_by_generation
             population_models_cost[j] = cost_generation
 
-        # todo find a better way to get top 2
         parent_a = np.argmax(population_models_cost)
         if population_models_cost[parent_a] <= previous_parent_a_cost:
-            mutation_probability += 0.01 if mutation_probability < 1 else 0
+            mutation_probability += 0.2 if mutation_probability < 1 else 0
         else:
             mutation_probability = 0.01
         previous_parent_a_cost = population_models_cost[parent_a]
@@ -147,7 +143,6 @@ def updated_current_lego(lego_information, models_used_by_generation, updated_le
 
 
 def not_negative_value(current_lego):
-    nb_negative_lego = 0
     for i in range(0, len(current_lego)):
         if current_lego[i] < 0:
             return False
