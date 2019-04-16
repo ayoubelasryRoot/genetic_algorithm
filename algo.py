@@ -1,15 +1,14 @@
 from multiprocessing import Process, Lock
 
 import numpy as np
-import copy
 from load_data import load_data_form_file
 import sys
 import time
 import random
 np.set_printoptions(linewidth=np.inf)
 
-best_cost_greedy: int = sys.maxsize * -1
-best_model_greedy: int = 0
+best_cost_greedy = sys.maxsize * -1
+best_model_greedy = 0
 
 
 class LegoInformation:
@@ -116,7 +115,7 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
                     updated_legos -= lego_information.lego_models[model_index] * models_used_by_generation[model_index]
 
             while not current_lego_done(updated_legos):
-                if almost_done(updated_legos) and np.random.random() < 0.9:
+                if not_negative_value(updated_legos) and np.random.random() < 0.9:
                     lock = Lock()
                     processes = []
                     for i in range(0, lego_information.nb_models):
@@ -157,12 +156,12 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
         # population_models_cost[parent_a] = original_value
 
 
-def almost_done(current_lego):
+def not_negative_value(current_lego):
     nb_negative_lego = 0
     for i in range(0, len(current_lego)):
         if current_lego[i] < 0:
-            nb_negative_lego += 1
-    return nb_negative_lego == 0
+            return False
+    return
 
 
 def change_was_made(current_legos, new_current_legos):
@@ -182,7 +181,8 @@ def current_lego_done(current_legos):
 
 if __name__ == "__main__":
     start = time.time()
-    file_name = "/home/ayoub/Desktop/genetic_algorithm/exemplaires/LEGO_50_50_1000"
+    print(sys.argv)
+    file_name = sys.argv[1]
     lego, price, models = load_data_form_file(file_name)
     lego_info = LegoInformation(lego, price, models)
     genetic_algorithm(lego_information=lego_info, start=start)
