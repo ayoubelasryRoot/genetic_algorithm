@@ -1,4 +1,6 @@
+#!/usr/bin/python3
 import numpy as np
+import multiprocessing as mp
 import copy
 from load_data import load_data_form_file
 import sys
@@ -29,28 +31,32 @@ def is_valid_model(lego_information=LegoInformation, index_model=0, current_lego
     return False
 
 
-def greedy_algorithm(current_lego, lego_information):
+def greedy_algorithm(current_lego, lego_information, solution):
+    '''
+    This algorithm is intended to run in another process
+    '''
+    #print(current_lego)
     best_cost = sys.maxsize * -1
-    best_index = None
-    # SHUFFLE MODELS TO INTRODUCE RANDOMNESS
-    for i in range(5):
-        models = copy.deepcopy(lego_information.lego_models)
-        updated_current_lego = copy.deepcopy(current_lego)
-        np.random.shuffle(models) 
-        while np.max(updated_current_lego) > 0:
-            # if is_valid_model(lego_information=lego_information, index_model=i, current_lego=current_lego):
-            updated_current_lego = np.subtract(updated_current_lego, models[i])
-            # if np.max(updated_current_lego) >= 0:
-            total = -1 * np.sum(np.subtract(current_lego, updated_current_lego))
-            if total > best_cost:
-                best_cost = total
-                best_index = i
-            # else:
-        cost = np.dot(updated_current_lego, lego_information.lego_price)
-        if cost > best_cost:
-            best_cost = cost
-            best_index = i
-    return best_index
+    ignore_indexes = []
+    while np.min(current_lego) > 0 or len(ignore_indexes) >= lego_information.nb_models:
+        costs = np.dot(lego_information.lego_models,np.transpose(lego_information.lego_price/current_lego))
+        costs = np.array([costs[i]  if i not in ignore_indexes else float('inf') for i in range(len(costs)) ])
+        min_idx = np.argmin(costs)
+        print(costs)
+        if is_valid_model(lego_information=lego_information, index_model=min_idx, current_lego=current_lego):
+            #print(lego_information.lego_models[min_idx])
+            updated_lego = np.subtract(current_lego, lego_information.lego_models[min_idx])
+            cost = np.dot(current_lego, lego_information.lego_price)
+            if cost > best_cost:
+                current_lego = updated_lego
+                solution[min_idx] += 1
+                best_cost = cost
+                print("new_best")
+            else: 
+                ignore_indexes.append(min_idx) 
+        else: 
+            ignore_indexes.append(min_idx)
+    return solution, current_lego
 
 
 def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
@@ -65,8 +71,13 @@ def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
 
 # todo remove duplicate code
 def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
+    # solution_greedy =mp.Array('i', lego_information.nb_models)
+    # start_solution=mp.Array('i', lego_information.nb_models)
+    # # Start greedy algorithm 
+    # greedy_process = mp.Process(target=greedy_algorithm, args=(start_solution, lego_information, solution_greedy))
     # to compare models
-    best_solution_models = None
+
+    best_solution_models = np.zeros(lego_information.nb_models)
     best_solution_price = -1 * sys.maxsize
     nb_species_by_iteration = 100
     # crossover
@@ -78,6 +89,10 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
     population_models = np.zeros((nb_species_by_iteration, lego_information.nb_models))
     population_models_cost = np.zeros(nb_species_by_iteration)
 
+    best_solution_models, current_lego = greedy_algorithm(np.copy(lego_information.initial_lego), lego_information, best_solution_models)
+    best_solution_price = np.dot(current_lego, lego_information.lego_price)
+    print("{} : {}".format(repr(best_solution_models), best_solution_price))
+    print(current_lego)
     while True:
         for j in range(0, nb_species_by_iteration):
             # IMPORTANT : REMOVE THIS FOR FINAL SUBMISSION
@@ -110,23 +125,18 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
                     updated_legos -= lego_information.lego_models[model_index] * models_used_by_generation[model_index]
 
             while not current_lego_done(updated_legos):
-                if False:
-                    index_model = greedy_algorithm(current_lego=updated_legos, lego_information=lego_information)
-                    updated_legos -= lego_information.lego_models[index_model]
-                    models_used_by_generation[index_model] += 1
-                else:
-                    test_updated_lego = None
-                    # while True:
-                    #     random_index = np.random.randint(0, len(lego_information.lego_models) - 1)
-                    #     test_updated_lego = np.subtract(updated_legos, lego_information.lego_models[random_index])
-                    #     if change_was_made(updated_legos, test_updated_lego):
-                    #         models_used_by_generation[random_index] += 1
-                    #         break
-                    # updated_legos = np.copy(test_updated_lego)
-                    # same logic but is less effecient
-                    model_index = random_valid_index_model(lego_information=lego_information, current_lego=updated_legos)
-                    updated_legos = np.subtract(updated_legos, lego_information.lego_models[model_index])
-                    models_used_by_generation[model_index] += 1
+                test_updated_lego = None
+                # while True:
+                #     random_index = np.random.randint(0, len(lego_information.lego_models) - 1)
+                #     test_updated_lego = np.subtract(updated_legos, lego_information.lego_models[random_index])
+                #     if change_was_made(updated_legos, test_updated_lego):
+                #         models_used_by_generation[random_index] += 1
+                #         break
+                # updated_legos = np.copy(test_updated_lego)
+                # same logic but is less effecient
+                model_index = random_valid_index_model(lego_information=lego_information, current_lego=updated_legos)
+                updated_legos = np.subtract(updated_legos, lego_information.lego_models[model_index])
+                models_used_by_generation[model_index] += 1
 
             cost_generation = np.dot(updated_legos, lego_information.lego_price)
             if cost_generation > best_solution_price:
