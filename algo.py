@@ -100,7 +100,7 @@ def genetic_algorithm(lego_information=LegoInformation):
                 return
 
             models_used_by_generation = np.zeros(lego_information.nb_models).astype("int32")
-            for h in range(0, lego_information.nb_lego):
+            for h in range(0, lego_information.nb_models):
                 value_to_set = population_models[parent_a][h]
                 if population_models[parent_b][h] < population_models[parent_a][h]:
                     value_to_set = population_models[parent_b][h]
