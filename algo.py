@@ -7,7 +7,7 @@ np.set_printoptions(linewidth=np.inf)
 
 
 class LegoInformation:
-    initial_leg = None
+    initial_lego = None
     lego_price = None
     lego_models = None
     nb_models = None
@@ -21,7 +21,7 @@ class LegoInformation:
         self.nb_lego = len(initial_lego)
 
 
-def greedy_algo(current_lego, lego_information):
+def greedy_algorithm(current_lego, lego_information):
     cost_models = np.zeros(lego_information.nb_models)
     for i in range(0, lego_information.nb_models):
         model_to_try = lego_information.lego_models[i]
@@ -54,7 +54,7 @@ def genetic_algorithm(lego_information=LegoInformation):
         updated_legos = np.copy(lego_information.initial_lego)
         while not current_lego_done(updated_legos):
             if almot_done(updated_legos):
-                index_model = greedy_algo(current_lego=updated_legos, lego_information=lego_information)
+                index_model = greedy_algorithm(current_lego=updated_legos, lego_information=lego_information)
                 updated_legos -= lego_information.lego_models[index_model]
                 models_used_by_generation[index_model] += 1
             else:
@@ -78,9 +78,11 @@ def genetic_algorithm(lego_information=LegoInformation):
 
     nb_species_by_iteration = lego_information.nb_lego * 2
 
+    parent_a = 0
+    parent_b = 0
     while True:
 
-        # selection
+        # todo find a better way to get top 2
         parent_a = np.argmax(population_models_cost)
         original_value = population_models_cost[parent_a]
         population_models_cost[parent_a] = sys.maxsize * -1
@@ -116,7 +118,7 @@ def genetic_algorithm(lego_information=LegoInformation):
 
             while not current_lego_done(updated_legos):
                 if almot_done(updated_legos):
-                    index_model = greedy_algo(current_lego=updated_legos, lego_information=lego_information)
+                    index_model = greedy_algorithm(current_lego=updated_legos, lego_information=lego_information)
                     updated_legos -= lego_information.lego_models[index_model]
                     models_used_by_generation[index_model] += 1
                 else:
