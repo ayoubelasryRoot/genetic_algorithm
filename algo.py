@@ -86,10 +86,6 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
     population_models = np.zeros((nb_species_by_iteration, lego_information.nb_models))
     population_models_cost = np.zeros(nb_species_by_iteration)
 
-    best_solution_models, current_lego = greedy_algorithm(np.copy(lego_information.initial_lego), lego_information, best_solution_models)
-    best_solution_price = np.dot(current_lego, lego_information.lego_price)
-    print("{} : {}".format(repr(best_solution_models), best_solution_price))
-    print(current_lego)
     while True:
         for j in range(0, nb_species_by_iteration):
             models_used_by_generation = np.zeros(lego_information.nb_models).astype("int32")
@@ -107,7 +103,7 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
             if cost_generation > best_solution_price:
                 best_solution_price = cost_generation
                 best_solution_models = np.copy(models_used_by_generation)
-                print(' '.join(map(str, best_solution_models)))
+                print(' '.join(map(str, best_solution_models)), " : {}".format(best_solution_price))
                 # print("{} : {}".format(repr(best_solution_models), best_solution_price))
 
             population_models[j] = models_used_by_generation
@@ -147,7 +143,6 @@ def updated_current_lego(lego_information, models_used_by_generation, updated_le
 
 
 def not_negative_value(current_lego):
-    nb_negative_lego = 0
     for i in range(0, len(current_lego)):
         if current_lego[i] < 0:
             return False
@@ -167,7 +162,6 @@ def current_lego_done(current_legos):
         if current_legos[i] > 0:
             return False
     return True
-
 
 if __name__ == "__main__":
     start = time.time()
