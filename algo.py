@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from load_data import load_data_form_file
 import sys
 import time
@@ -30,21 +31,25 @@ def is_valid_model(lego_information=LegoInformation, index_model=0, current_lego
 
 def greedy_algorithm(current_lego, lego_information):
     best_cost = sys.maxsize * -1
-    best_index = 0
-    for i in range(0, lego_information.nb_models):
-        if is_valid_model(lego_information=lego_information, index_model=i, current_lego=current_lego):
-            updated_current_lego = np.subtract(current_lego, lego_information.lego_models[i])
-            if np.min(updated_current_lego) >= 0:
-                total = -1 * np.sum(np.subtract(current_lego, updated_current_lego))
-                if total > best_cost:
-                    best_cost = total
-                    best_index = i
-            else:
-                cost = np.dot(updated_current_lego, lego_information.lego_price)
-                if cost > best_cost:
-                    best_cost = cost
-                    best_index = i
-    # todo introduce probability to choose a model
+    best_index = None
+    # SHUFFLE MODELS TO INTRODUCE RANDOMNESS
+    for i in range(5):
+        models = copy.deepcopy(lego_information.lego_models)
+        updated_current_lego = copy.deepcopy(current_lego)
+        np.random.shuffle(models) 
+        while np.max(updated_current_lego) > 0:
+            # if is_valid_model(lego_information=lego_information, index_model=i, current_lego=current_lego):
+            updated_current_lego = np.subtract(updated_current_lego, models[i])
+            # if np.max(updated_current_lego) >= 0:
+            total = -1 * np.sum(np.subtract(current_lego, updated_current_lego))
+            if total > best_cost:
+                best_cost = total
+                best_index = i
+            # else:
+        cost = np.dot(updated_current_lego, lego_information.lego_price)
+        if cost > best_cost:
+            best_cost = cost
+            best_index = i
     return best_index
 
 
@@ -169,7 +174,7 @@ def current_lego_done(current_legos):
 
 if __name__ == "__main__":
     start = time.time()
-    file_name = "/home/ayoub/Desktop/school/INF8775/TP3/exemplaires/LEGO_50_50_1000"
+    file_name = "/mnt/c/Users/pinsz/Documents/COURS/Hiver2019/INF8775/TPs/genetic_algorithm/exemplaires/LEGO_50_50_1000"
     lego, price, models = load_data_form_file(file_name)
     lego_info = LegoInformation(lego, price, models)
     genetic_algorithm(lego_information=lego_info, start=start)
