@@ -3,9 +3,6 @@ from load_data import load_data_form_file
 import sys
 import time
 import random
-#sys.stdout = open('file.txt', 'w')
-np.set_printoptions(linewidth=np.inf)
-
 
 class LegoInformation:
     initial_lego = None
@@ -62,7 +59,7 @@ def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
 
 
 # todo remove duplicate code
-def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
+def genetic_algorithm(lego_information=LegoInformation):
     # to compare models
     best_solution_models = None
     best_solution_price = -1 * sys.maxsize
@@ -78,15 +75,6 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
 
     while True:
         for j in range(0, nb_species_by_iteration):
-            # IMPORTANT : REMOVE THIS FOR FINAL SUBMISSION
-            current_time = time.time() - start
-            if current_time > 60*3:
-                nb_minute = int(current_time/60)
-                nb_sec = current_time % 60
-                print(' '.join(map(str, best_solution_models)))
-                print("Total time {}:{} | best solution : {}".format(nb_minute, nb_sec, best_solution_price))
-                return
-
             models_used_by_generation = np.zeros(lego_information.nb_models).astype("int32")
             if parent_a != -1:
                 species_selection(lego_information, population_models, parent_a, parent_b, models_used_by_generation, mutation_probability)
@@ -169,4 +157,4 @@ if __name__ == "__main__":
     file_name = sys.argv[1]
     lego, price, models = load_data_form_file(file_name)
     lego_info = LegoInformation(lego, price, models)
-    genetic_algorithm(lego_information=lego_info, start=start)
+    genetic_algorithm(lego_information=lego_info)
