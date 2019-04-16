@@ -1,10 +1,20 @@
 #!/bin/bash
 
-OPTIONS=""
 while [[ $# -gt 0 ]]
 do
-EX_PATH="$1"
+key="$1"
+
+case $key in
+    -e)
+    EX_PATH="$2"
+    shift
+    ;;
+    *)
+        echo "Argument inconnu: ${1}"
+        exit
+    ;;
+esac
 shift
 done
-echo " $EX_PATH"
+
 python3 algo.py $EX_PATH

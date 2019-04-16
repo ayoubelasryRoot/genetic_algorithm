@@ -3,6 +3,7 @@ from load_data import load_data_form_file
 import sys
 import time
 import random
+#sys.stdout = open('file.txt', 'w')
 np.set_printoptions(linewidth=np.inf)
 
 
@@ -82,6 +83,7 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
             if current_time > 60*3:
                 nb_minute = int(current_time/60)
                 nb_sec = current_time % 60
+                print(' '.join(map(str, best_solution_models)))
                 print("Total time {}:{} | best solution : {}".format(nb_minute, nb_sec, best_solution_price))
                 return
 
@@ -100,7 +102,8 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
             if cost_generation > best_solution_price:
                 best_solution_price = cost_generation
                 best_solution_models = np.copy(models_used_by_generation)
-                print("{} : {}".format(repr(best_solution_models), best_solution_price))
+                print(' '.join(map(str, best_solution_models)))
+                # print("{} : {}".format(repr(best_solution_models), best_solution_price))
 
             population_models[j] = models_used_by_generation
             population_models_cost[j] = cost_generation
@@ -163,7 +166,6 @@ def current_lego_done(current_legos):
 
 if __name__ == "__main__":
     start = time.time()
-    print(sys.argv)
     file_name = sys.argv[1]
     lego, price, models = load_data_form_file(file_name)
     lego_info = LegoInformation(lego, price, models)
