@@ -1,10 +1,18 @@
 import numpy as np
 from load_data import load_data_form_file
 import sys
+import time
+
 np.set_printoptions(linewidth=np.inf)
 
 
 class LegoInformation:
+    initial_leg = None
+    lego_price = None
+    lego_models = None
+    nb_models = None
+    nb_lego = None
+
     def __init__(self, initial_lego, lego_price, lego_models):
         self.initial_lego = initial_lego
         self.lego_price = lego_price
@@ -25,22 +33,26 @@ def greedy_algo(current_lego, lego_information):
                 cost_models[i] = np.dot(updated_current_lego, lego_information.lego_price)
         else:
             cost_models[i] = sys.maxsize * -1
+    # todo introduce probability to choose a model
     return np.argmax(cost_models)
 
 
-def genetic_algo(lego_information=LegoInformation):
+# todo remove duplicate code
+def genetic_algorithm(lego_information=LegoInformation):
+    # to compare models
     best_solution_models = None
     best_solution_price = -1 * sys.maxsize
-    POPULATION = lego_information.nb_lego * 10
 
-    population_models = np.zeros((POPULATION, lego_information.nb_lego))
-    population_models_cost = np.zeros(POPULATION)
+    nb_species_by_iteration = 100
+    population_models = np.zeros((nb_species_by_iteration, lego_information.nb_lego))
+    population_models_cost = np.zeros(nb_species_by_iteration)
 
-    print("random population")
-    for i in range(0, POPULATION):
+    start = time.time()
+
+    for i in range(0, nb_species_by_iteration):
         models_used_by_generation = np.zeros(lego_information.nb_models).astype("int32")
         updated_legos = np.copy(lego_information.initial_lego)
-        while not current_legos_done(updated_legos):
+        while not current_lego_done(updated_legos):
             if almot_done(updated_legos):
                 index_model = greedy_algo(current_lego=updated_legos, lego_information=lego_information)
                 updated_legos -= lego_information.lego_models[index_model]
@@ -55,7 +67,6 @@ def genetic_algo(lego_information=LegoInformation):
                         break
                 updated_legos = np.copy(test_updated_lego)
 
-
         cost_generation = np.dot(updated_legos, lego_information.lego_price)
         if cost_generation > best_solution_price:
             best_solution_price = cost_generation
@@ -65,9 +76,10 @@ def genetic_algo(lego_information=LegoInformation):
         population_models[i] = models_used_by_generation
         population_models_cost[i] = cost_generation
 
-    print("genes selection")
-    POPULATION = lego_information.nb_lego * 2
-    for i in range(0, 400000):
+    nb_species_by_iteration = lego_information.nb_lego * 2
+
+    while True:
+
         # selection
         parent_a = np.argmax(population_models_cost)
         original_value = population_models_cost[parent_a]
@@ -75,7 +87,16 @@ def genetic_algo(lego_information=LegoInformation):
         parent_b = np.argmax(population_models_cost)
         population_models_cost[parent_a] = original_value
 
-        for j in range(0, POPULATION):
+        for j in range(0, nb_species_by_iteration):
+
+            # IMPORTANT : REMOVE THIS FOR FINAL SUBMISSION
+            current_time = time.time() - start
+            if current_time > 60*3:
+                nb_minute = int(current_time/60)
+                nb_sec = current_time % 60
+                print("Total time {}:{} | best solution : {}".format(nb_minute, nb_sec, best_solution_price))
+                return
+
             models_used_by_generation = np.zeros(lego_information.nb_models).astype("int32")
             for h in range(0, lego_information.nb_lego):
                 value_to_set = population_models[parent_a][h]
@@ -93,7 +114,7 @@ def genetic_algo(lego_information=LegoInformation):
                 if models_used_by_generation[model_index] > 0:
                     updated_legos -= lego_information.lego_models[model_index] * models_used_by_generation[model_index]
 
-            while not current_legos_done(updated_legos):
+            while not current_lego_done(updated_legos):
                 if almot_done(updated_legos):
                     index_model = greedy_algo(current_lego=updated_legos, lego_information=lego_information)
                     updated_legos -= lego_information.lego_models[index_model]
@@ -134,15 +155,14 @@ def change_was_made(current_legos, new_current_legos):
     return not positive_equals
 
 
-def current_legos_done(current_legos):
+def current_lego_done(current_legos):
     for i in range(0, len(current_legos)):
         if current_legos[i] > 0:
             return False
     return True
 
-
 if __name__ == "__main__":
     file_name = "/home/ayoub/Desktop/school/INF8775/TP3/exemplaires/LEGO_50_50_1000"
     lego, price, models = load_data_form_file(file_name)
     lego_info = LegoInformation(lego, price, models)
-    genetic_algo(lego_information=lego_info)
+    genetic_algorithm(lego_information=lego_info)
