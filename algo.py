@@ -3,7 +3,6 @@ from load_data import load_data_form_file
 import sys
 import time
 import random
-
 np.set_printoptions(linewidth=np.inf)
 
 
@@ -22,35 +21,57 @@ class LegoInformation:
         self.nb_lego = len(initial_lego)
 
 
+def is_valid_model(lego_information=LegoInformation, index_model=0, current_lego=[]):
+    for i in range(0, lego_information.nb_lego):
+        if current_lego[i] > 0 and lego_information.lego_models[index_model][i] > 0:
+            return True
+    return False
+
+
 def greedy_algorithm(current_lego, lego_information):
-    cost_models = np.zeros(lego_information.nb_models)
+    best_cost = sys.maxsize * -1
+    best_index = 0
     for i in range(0, lego_information.nb_models):
-        model_to_try = lego_information.lego_models[i]
-        updated_current_lego = np.subtract(current_lego, model_to_try)
-        if change_was_made(current_lego, updated_current_lego):
+        if is_valid_model(lego_information=lego_information, index_model=i, current_lego=current_lego):
+            updated_current_lego = np.subtract(current_lego, lego_information.lego_models[i])
             if np.min(updated_current_lego) >= 0:
-                cost_models[i] = np.sum(np.subtract(current_lego, updated_current_lego))
+                total = -1 * np.sum(np.subtract(current_lego, updated_current_lego))
+                if total > best_cost:
+                    best_cost = total
+                    best_index = i
             else:
-                cost_models[i] = np.dot(updated_current_lego, lego_information.lego_price)
-        else:
-            cost_models[i] = sys.maxsize * -1
+                cost = np.dot(updated_current_lego, lego_information.lego_price)
+                if cost > best_cost:
+                    best_cost = cost
+                    best_index = i
     # todo introduce probability to choose a model
-    return np.argmax(cost_models)
+    return best_index
+
+
+def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
+    valid_index = []
+    for i in range(0, lego_information.nb_lego):
+        if current_lego[i] > 0:
+            for j in range(0, lego_information.nb_models):
+                if lego_information.lego_models[j][i] > 0:
+                    valid_index.append(j)
+    return valid_index[np.random.randint(0, len(valid_index))]
 
 
 # todo remove duplicate code
-def genetic_algorithm(lego_information=LegoInformation):
+def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
     # to compare models
     best_solution_models = None
     best_solution_price = -1 * sys.maxsize
-    start = time.time()
     nb_species_by_iteration = 100
-    population_models = np.zeros((nb_species_by_iteration, lego_information.nb_lego))
-    population_models_cost = np.zeros(nb_species_by_iteration)
+    # crossover
     parent_a = -1
     parent_b = -1
     previous_parent_a_cost = 0
     mutation_probability = 0.01
+
+    population_models = np.zeros((nb_species_by_iteration, lego_information.nb_models))
+    population_models_cost = np.zeros(nb_species_by_iteration)
 
     while True:
         for j in range(0, nb_species_by_iteration):
@@ -71,6 +92,7 @@ def genetic_algorithm(lego_information=LegoInformation):
                     if value_to_set > 0:
                         models_used_by_generation[h] = value_to_set
 
+                # mutation
                 if np.random.random() < mutation_probability:
                     random_index_for_mutation = random.choice([
                         index for index in range(0, lego_info.nb_models) if models_used_by_generation[index] > 0
@@ -89,13 +111,17 @@ def genetic_algorithm(lego_information=LegoInformation):
                     models_used_by_generation[index_model] += 1
                 else:
                     test_updated_lego = None
-                    while True:
-                        random_index = np.random.randint(0, len(lego_information.lego_models) - 1)
-                        test_updated_lego = np.subtract(updated_legos, lego_information.lego_models[random_index])
-                        if change_was_made(updated_legos, test_updated_lego):
-                            models_used_by_generation[random_index] += 1
-                            break
-                    updated_legos = np.copy(test_updated_lego)
+                    # while True:
+                    #     random_index = np.random.randint(0, len(lego_information.lego_models) - 1)
+                    #     test_updated_lego = np.subtract(updated_legos, lego_information.lego_models[random_index])
+                    #     if change_was_made(updated_legos, test_updated_lego):
+                    #         models_used_by_generation[random_index] += 1
+                    #         break
+                    # updated_legos = np.copy(test_updated_lego)
+                    # same logic but is less effecient
+                    model_index = random_valid_index_model(lego_information=lego_information, current_lego=updated_legos)
+                    updated_legos = np.subtract(updated_legos, lego_information.lego_models[model_index])
+                    models_used_by_generation[model_index] += 1
 
             cost_generation = np.dot(updated_legos, lego_information.lego_price)
             if cost_generation > best_solution_price:
@@ -123,7 +149,7 @@ def almost_done(current_lego):
     for i in range(0, len(current_lego)):
         if current_lego[i] < 0:
             nb_negative_lego += 1
-    return len(current_lego) - nb_negative_lego <= 2
+    return len(current_lego) - nb_negative_lego <= 1
 
 
 def change_was_made(current_legos, new_current_legos):
@@ -140,8 +166,10 @@ def current_lego_done(current_legos):
             return False
     return True
 
+
 if __name__ == "__main__":
+    start = time.time()
     file_name = "/home/ayoub/Desktop/school/INF8775/TP3/exemplaires/LEGO_50_50_1000"
     lego, price, models = load_data_form_file(file_name)
     lego_info = LegoInformation(lego, price, models)
-    genetic_algorithm(lego_information=lego_info)
+    genetic_algorithm(lego_information=lego_info, start=start)
