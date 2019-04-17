@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 import numpy as np
-import multiprocessing as mp
 from load_data import load_data_form_file
 import sys
 import time
 import random
+
 
 class LegoInformation:
     initial_lego = None
@@ -21,42 +21,26 @@ class LegoInformation:
         self.nb_lego = len(initial_lego)
 
 
-def is_valid_model(lego_information=LegoInformation, index_model=0, current_lego=[]):
+def is_valid_model(lego_information, index_model, current_lego):
     for i in range(0, lego_information.nb_lego):
         if current_lego[i] > 0 and lego_information.lego_models[index_model][i] > 0:
             return True
     return False
 
 
-def greedy_algorithm(current_lego, lego_information, solution):
-    '''
-    This algorithm is intended to run in another process
-    '''
-    #print(current_lego)
+def guess_greedy_model(lego_information, current_lego):
+    cost_best_model = 0
     best_cost = sys.maxsize * -1
-    ignore_indexes = []
-    while np.min(current_lego) > 0 or len(ignore_indexes) >= lego_information.nb_models:
-        costs = np.dot(lego_information.lego_models,np.transpose(lego_information.lego_price/current_lego))
-        costs = np.array([costs[i]  if i not in ignore_indexes else float('inf') for i in range(len(costs)) ])
-        min_idx = np.argmin(costs)
-        print(costs)
-        if is_valid_model(lego_information=lego_information, index_model=min_idx, current_lego=current_lego):
-            #print(lego_information.lego_models[min_idx])
-            updated_lego = np.subtract(current_lego, lego_information.lego_models[min_idx])
-            cost = np.dot(current_lego, lego_information.lego_price)
+    for i in range(0, lego_information.nb_models):
+        if is_valid_model(lego_information, i, current_lego):
+            cost = np.dot(np.subtract(current_lego, lego_information.lego_models[i]), lego_information.lego_price)
             if cost > best_cost:
-                current_lego = updated_lego
-                solution[min_idx] += 1
                 best_cost = cost
-                print("new_best")
-            else: 
-                ignore_indexes.append(min_idx) 
-        else: 
-            ignore_indexes.append(min_idx)
-    return solution, current_lego
+                cost_best_model = i
+    return cost_best_model
 
 
-def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
+def random_valid_index_model(lego_information, current_lego):
     valid_index = []
     for i in range(0, lego_information.nb_lego):
         if current_lego[i] > 0:
@@ -66,13 +50,7 @@ def random_valid_index_model(lego_information=LegoInformation, current_lego=[]):
     return valid_index[np.random.randint(0, len(valid_index))]
 
 
-# todo remove duplicate code
-def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
-    # solution_greedy =mp.Array('i', lego_information.nb_models)
-    # start_solution=mp.Array('i', lego_information.nb_models)
-    # # Start greedy algorithm 
-    # greedy_process = mp.Process(target=greedy_algorithm, args=(start_solution, lego_information, solution_greedy))
-    # to compare models
+def genetic_algorithm(lego_information=LegoInformation):
 
     best_solution_models = np.zeros(lego_information.nb_models)
     best_solution_price = -1 * sys.maxsize
@@ -95,7 +73,11 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
             updated_legos = np.copy(lego_information.initial_lego)
             updated_current_lego(lego_information, models_used_by_generation, updated_legos)
             while not current_lego_done(updated_legos):
-                model_index = random_valid_index_model(lego_information=lego_information, current_lego=updated_legos)
+                model_index = 0
+                if np.min(updated_legos) < 0 and np.random.random() < 0.001:
+                    model_index = guess_greedy_model(lego_information, updated_legos)
+                else:
+                    model_index = random_valid_index_model(lego_information=lego_information, current_lego=updated_legos)
                 updated_legos = np.subtract(updated_legos, lego_information.lego_models[model_index])
                 models_used_by_generation[model_index] += 1
 
@@ -103,13 +85,12 @@ def genetic_algorithm(lego_information=LegoInformation, start=time.time()):
             if cost_generation > best_solution_price:
                 best_solution_price = cost_generation
                 best_solution_models = np.copy(models_used_by_generation)
-                print(' '.join(map(str, best_solution_models)), " : {}".format(best_solution_price))
+                print(' '.join(map(str, best_solution_models)))
                 # print("{} : {}".format(repr(best_solution_models), best_solution_price))
 
             population_models[j] = models_used_by_generation
             population_models_cost[j] = cost_generation
 
-        # todo find a better way to get top 2
         parent_a = np.argmax(population_models_cost)
         if population_models_cost[parent_a] <= previous_parent_a_cost:
             mutation_probability += 0.01 if mutation_probability < 1 else 0
@@ -142,26 +123,12 @@ def updated_current_lego(lego_information, models_used_by_generation, updated_le
             updated_legos -= lego_information.lego_models[model_index] * models_used_by_generation[model_index]
 
 
-def not_negative_value(current_lego):
-    for i in range(0, len(current_lego)):
-        if current_lego[i] < 0:
-            return False
-    return
-
-
-def change_was_made(current_legos, new_current_legos):
-    positive_equals = True
-    for i in range(0, len(current_legos)):
-        if current_legos[i] > 0 and current_legos[i] != new_current_legos[i]:
-            positive_equals = False
-    return not positive_equals
-
-
 def current_lego_done(current_legos):
     for i in range(0, len(current_legos)):
         if current_legos[i] > 0:
             return False
     return True
+
 
 if __name__ == "__main__":
     start = time.time()
