@@ -17,4 +17,4 @@ esac
 shift
 done
 
-python3 algo.py $EX_PATH
+python3 genetic_algo.py $EX_PATH

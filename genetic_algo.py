@@ -85,7 +85,7 @@ def genetic_algorithm(lego_information=LegoInformation):
             if cost_generation > best_solution_price:
                 best_solution_price = cost_generation
                 best_solution_models = np.copy(models_used_by_generation)
-                print(' '.join(map(str, best_solution_models)))
+                print(' '.join(map(str, best_solution_models)), " : {}".format(best_solution_price))
                 # print("{} : {}".format(repr(best_solution_models), best_solution_price))
 
             population_models[j] = models_used_by_generation
