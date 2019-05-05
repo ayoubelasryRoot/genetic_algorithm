@@ -6,11 +6,11 @@ This project was done in order to learn how we can use a genetic algorithm to so
 
 # Example
 ## Cost and Current Legos
-The <span style="color : yellow"> first row</span> reprents the price for each type of lego. And the <span style="color : green"> second row</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 parts and the cost for each piece of the first lego is 8$
+The <span style="color : yellow"> first row</span> represents the price for each type of lego and the <span style="color : green"> second row</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 parts and the cost of each piece of the first lego is 8$
 ![models and prices](images/legos_price.png)
 
 ## Models
-This <span style="color : blue"> table</span> reprents the models we can construct. For each model we have an array  of numbers that represents the number of parts for each lego needed in order to construct this model. For example, the model [1, 0, 1] means that we need 1 of the first type lego, 0 of the second type of lego and 1 of the third type of lego.
+This <span style="color : blue"> table</span> represents the models we can construct. For each model, we have an array of numbers that represents the number of parts for each lego needed in order to construct this model. For example, the model [1, 0, 1] means that we need 1 of the first type of lego, 0 of the second type of lego and 1 of the third type of lego.
 ![models and prices](images/models.png)
 
 ## Possible solution
@@ -25,11 +25,11 @@ So we need to spend 7$ in order to construct 2 times the third model
 ## Data
 Data Information by line
 <ol>
-  <li>number of lego by type</li>
+  <li>number of legos by type</li>
   <li>Current Legos</li>
-  <li>Lego cost foreach type</li>
+  <li>Lego cost for each type</li>
   <li>Number of models</li>
-  <li>From this line to the end is all possible models configuration</li>
+  <li>From this line to the end is all possible models configurations</li>
 </ol> 
 
 ![models and prices](images/example.png)
