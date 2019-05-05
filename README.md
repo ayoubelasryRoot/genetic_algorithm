@@ -1,12 +1,3 @@
-
-<style> 
-img {
-  display:block;
-  margin: 0 auto;
-  padding : 10px
-}
-</style>
-
 # Introduction
 <p>
 This project was done in order to learn how we can use genetic algorithm to solve complex problems. 
@@ -15,7 +6,7 @@ This project was done in order to learn how we can use genetic algorithm to solv
 
 # Example
 ## Cost and Current Logos
-The <span style="color : yellow"> first table</span> reprents the price for each type of lego. And the <span style="color : green"> second table</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 pecies and the cost for each piece of the first lego is 8$
+The <span style="color : yellow"> first row</span> reprents the price for each type of lego. And the <span style="color : green"> second row</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 pecies and the cost for each piece of the first lego is 8$
 ![models and prices](images/legos_price.png)
 
 ## Models
