@@ -2,15 +2,15 @@
 <p>
 This project was done in order to learn how we can use genetic algorithm to solve complex problems. 
 </p>
-<p>The problem we face in this project is we want to get ride of our legos by building models. But, it's impssible to get ride off our legos without having to buy other pecies.</p>
+<p>The problem we face in this project is we want to get ride of our legos by building models. But, it's impssible to get ride off our legos without having to buy other parts.</p>
 
 # Example
 ## Cost and Current Logos
-The <span style="color : yellow"> first row</span> reprents the price for each type of lego. And the <span style="color : green"> second row</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 pecies and the cost for each piece of the first lego is 8$
+The <span style="color : yellow"> first row</span> reprents the price for each type of lego. And the <span style="color : green"> second row</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 parts and the cost for each piece of the first lego is 8$
 ![models and prices](images/legos_price.png)
 
 ## Models
-This <span style="color : blue"> table</span> reprents the models we can construct. For each model we have an array  of numbers that represents the number of pecies for each lego needed in order to construct this model. For example, the model [1, 0, 1] means that we need 1 of the first type lego, 0 of the second type of lego and 1 of the third type of lego.
+This <span style="color : blue"> table</span> reprents the models we can construct. For each model we have an array  of numbers that represents the number of parts for each lego needed in order to construct this model. For example, the model [1, 0, 1] means that we need 1 of the first type lego, 0 of the second type of lego and 1 of the third type of lego.
 ![models and prices](images/models.png)
 
 ## Possible solution
@@ -37,6 +37,6 @@ Data Information by line
 # How to run the the script
  In order to start the algorithm you need to entrer this command : 
  ```bash
-       ./run.sh -e /home/ayoub/Desktop/genetic_algorithm/exemplaires/LEGO_50_50_100
+    ./run.sh -e /home/ayoub/Desktop/genetic_algorithm/exemplaires/LEGO_50_50_100
 ```
 after -e you need to provide the path of the data.
