@@ -5,7 +5,7 @@ This project was done in order to learn how we can use genetic algorithm to solv
 <p>The problem we face in this project is we want to get ride of our legos by building models. But, it's impssible to get ride off our legos without having to buy other parts.</p>
 
 # Example
-## Cost and Current Logos
+## Cost and Current Legos
 The <span style="color : yellow"> first row</span> reprents the price for each type of lego. And the <span style="color : green"> second row</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 parts and the cost for each piece of the first lego is 8$
 ![models and prices](images/legos_price.png)
 
