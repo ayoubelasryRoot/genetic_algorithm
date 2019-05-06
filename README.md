@@ -10,7 +10,7 @@ The <span style="color : yellow"> first row</span> represents the price of each 
 ![models and prices](images/legos_price.png)
 
 ## Models
-This <span style="color : blue"> table</span> represents the models we can construct. For each model, we have an array of numbers that represents the number of parts for each lego needed in order to construct this model. For example, the model [1, 0, 1] means that we need 1 of the first type of lego, 0 of the second type of lego and 1 of the third type of lego.
+This <span style="color : blue"> table</span> represents the models we can construct. For each model, we have an array of numbers that represents the number of parts of each lego needed in order to construct this model. For example, the model [1, 0, 1] means that we need 1 of the first type of lego, 0 of the second type of lego and 1 of the third type of lego.
 ![models and prices](images/models.png)
 
 ## Possible solution
