@@ -19,7 +19,7 @@ This <span style="color : blue"> table</span> represents the models we can const
 
 [0, -2, -1] * [8, 2, 3] = -7 <br>
 
-So we need to spend 7$ in order to construct 2 times the third model
+Therefore, we need to spend 7$ in order to construct twice the third model
 
 
 ## Data
