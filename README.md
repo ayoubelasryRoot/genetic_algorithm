@@ -6,7 +6,7 @@ This project was done in order to learn how we can use a genetic algorithm to so
 
 # Example
 ## Cost and Current Legos
-The <span style="color : yellow"> first row</span> represents the price of each type of lego and the <span style="color : green"> second row</span> represents the current total we have for each type of lego.For example, for the first lego we have 4 parts and the cost of each piece of the first lego is 8$
+The <span style="color : yellow"> first row</span> represents the price of each type of lego and the <span style="color : green"> second row</span> represents the current total we have for each type of lego. For example, for the first lego we have 4 parts and the cost of each piece of the first lego is 8$
 ![models and prices](images/legos_price.png)
 
 ## Models
@@ -25,7 +25,7 @@ So we need to spend 7$ in order to construct 2 times the third model
 ## Data
 Data Information by line
 <ol>
-  <li>number of legos by type</li>
+  <li>Number of legos by type</li>
   <li>Current Legos</li>
   <li>Lego cost for each type</li>
   <li>Number of models</li>
