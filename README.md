@@ -29,7 +29,7 @@ Data Information by line
   <li>Current Legos</li>
   <li>Lego cost for each type</li>
   <li>Number of models</li>
-  <li>From this line to the end is all possible models configurations</li>
+  <li>From this line to the end is all possible model configurations</li>
 </ol> 
 
 ![models and prices](images/example.png)
