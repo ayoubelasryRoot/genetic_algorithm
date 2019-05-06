@@ -2,7 +2,7 @@
 <p>
 This project was done in order to learn how we can use a genetic algorithm to solve complex problems. 
 </p>
-<p>The problem we face in this project is that we want to get rid of our legos by building models. However, it's impssible to get rid of them without having to buy other parts.</p>
+<p>The problem we face in this project is that we want to get rid of our legos by building models. However, it's impossible to get rid of them without having to buy other parts.</p>
 
 # Example
 ## Cost and Current Legos
